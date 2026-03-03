@@ -107,12 +107,12 @@ local function resize()
     if W > H then
         coord.menu = {x = offset, y = offset}
         coord.action = {x = offset, y = H - cell_size * 2 - offset}
-        coord.ptext = {x = offset + cell_size * 0.3, y = H - cell_size * 2 - offset * 2, rad = - math.pi / 2}
+        coord.ptext = {x = offset + cell_size * 0.35, y = H - cell_size * 2 - offset * 2, rad = - math.pi / 2}
         coord.gmode = {x = offset, y = offset + cell_size * 2}
     else
         coord.menu = {x = W - cell_size * 2 - offset, y = offset}
         coord.action = {x = offset, y = offset}
-        coord.ptext = {x = offset * 2 + cell_size * 2, y = offset + cell_size * 0.3, rad = 0}
+        coord.ptext = {x = offset * 2 + cell_size * 2, y = offset + cell_size * 0.35, rad = 0}
         coord.gmode = {x = W - cell_size * 4 - offset, y = offset}
     end
 
