@@ -4,41 +4,39 @@ local s = require("say")
 
 -- colors
 local color_bg = {238/255, 236/255, 237/255}  -- #eeeced
-local color_fg = {98/255, 114/255, 122/255}  -- #62727a
-local color_cell = {74/255, 195/255, 203/255}  -- #4ac3cb
-local color_mine = {229/255, 81/255, 109/255}  -- #e5516d
-local color_mine_open = {229/255, 81/255, 109/255, 0.25}  -- #e5516d
-local color_empty_cell = {98/255, 114/255, 122/255, 0.25}  -- #62727a
-local color_press_cell = {255/255, 221/255, 103/255}  -- #ffdd67
+local color_fg = {63/255, 63/255, 63/255}  -- #3f3f3f
+local color_button_press = {155/255, 155/255, 154/255}  -- #9b9b9a
+local color_empty_cell = {155/255, 155/255, 154/255, 0.25}  -- #9b9b9a
+local color_press_cell = {252/255, 234/255, 43/255, 0.75}  -- #ffdd67
+local color_mine_open = {234/255, 90/255, 71/255, 0.25}  -- #e5516d
 
 -- images
 local image_paper = love.graphics.newImage("images/paper.png")
 local image_cell = love.graphics.newImage("images/cell.png")
+local image_tile = love.graphics.newImage("images/tile.png")
+local image_mine = love.graphics.newImage("images/mine.png")
+local image_button = love.graphics.newImage("images/button.png")
 local image_flag = love.graphics.newImage("images/flag.png")
 local image_menu = love.graphics.newImage("images/menu.png")
 local image_back = love.graphics.newImage("images/back.png")
-local image_info = love.graphics.newImage("images/info.png")
+local image_info = love.graphics.newImage("images/help.png")
 local image_easy = love.graphics.newImage("images/easy.png")
 local image_normal = love.graphics.newImage("images/normal.png")
 local image_hard = love.graphics.newImage("images/hard.png")
 local image_random = love.graphics.newImage("images/random.png")
-local image_action_pick = love.graphics.newImage("images/action_pick.png")
-local image_action_flag = love.graphics.newImage("images/action_flag.png")
+local image_pick = love.graphics.newImage("images/pick.png")
+local image_flag = love.graphics.newImage("images/flag.png")
 local image_lose = love.graphics.newImage("images/lose.png")
 local image_win = love.graphics.newImage("images/win.png")
 local image_game_over = image_win
 local image_collision = love.graphics.newImage("images/collision.png")
-local image_easy_mode = love.graphics.newImage("images/easy_mode.png")
-local image_normal_mode = love.graphics.newImage("images/normal_mode.png")
-local image_hard_mode = love.graphics.newImage("images/hard_mode.png")
-local image_random_mode = love.graphics.newImage("images/random_mode.png")
 local image_lang = love.graphics.newImage("images/lang.png")
-local image_move = love.graphics.newImage("images/move.png")
+local image_move = love.graphics.newImage("images/fly.png")
 local image_stop = love.graphics.newImage("images/stop.png")
 local image_sound = love.graphics.newImage("images/sound.png")
 local image_mute = love.graphics.newImage("images/mute.png")
 local image_about = love.graphics.newImage("images/about.png")
-local image_exit = love.graphics.newImage("images/exit.png")
+local image_exit = love.graphics.newImage("images/door.png")
 
 -- calculate
 local offset = 18
@@ -116,13 +114,13 @@ local function resize()
         coord.gmode = {x = W - cell_size * 4 - offset, y = offset}
     end
 
-    local particles_colors = { {66/255, 173/255, 226/255}, {237/255, 76/255, 92/255}, {255/255, 135/255, 54/255}, {194/255, 143/255, 239/255} }
+    local particles_colors = { {177/255, 204/255, 51/255}, {146/255, 211/255, 245/255}, {241/255, 179/255, 28/255}, {234/255, 90/255, 71/255}, {179/255, 153/255, 200/255}, {252/255, 234/255, 43/255} }
     local particles_alpha = {0.3, 0.6}
     for p=1,#particles do
         particles[p].size = love.math.random( math.floor(cell_size/10), math.ceil(cell_size/5) )
         particles[p].x = love.math.random( 0, W - particles[p].size )
         particles[p].y = love.math.random( 0, H - particles[p].size )
-        local c = love.math.random( 1, 4 )
+        local c = love.math.random( 1, 6 )
         local a = love.math.random( 1, 2 )
         local pc = particles_colors[c]
         pc[4] = particles_alpha[a]
@@ -185,8 +183,8 @@ function love.load()
 Open all the cells on the field except those containing mines. The number in the open cell indicates the number of mines in the adjacent cells. You can mark a cell with a flag if you think it is mined. A cell with a flag is blocked from being opened accidentally. Use tapping on numbers to recursively chord flags and open cells. Good luck!]])
     s:set("About text", [[ABOUT GAME
 
-Images: Emojitwo
-emojitwo.github.io
+Images: OpenMoji
+openmoji.org
 
 The Programming Language Lua
 lua.org
@@ -203,8 +201,8 @@ avbezdolny.github.io]])
 Откройте все ячейки на поле, кроме содержащих мины. Число в открытой ячейке означает количество мин в соседних ячейках. Можно пометить ячейку флагом, если считаете, что она заминирована. Ячейка с флагом заблокирована от случайного открытия. Используйте нажатия на числа для рекурсивного аккорда флагами и открытия соседних ячеек. Удачи!]])
     s:set("About text", [[ОБ ИГРЕ
 
-Изображения: Emojitwo
-emojitwo.github.io
+Изображения: OpenMoji
+openmoji.org
 
 Язык Программирования Lua
 lua.org
@@ -325,12 +323,12 @@ function love.update(dt)
         for p=1,#particles do
             particles[p].y = particles[p].y + particles[p].size * dt * 6
             if particles[p].y > love.graphics.getHeight() then
-                local particles_colors = { {66/255, 173/255, 226/255}, {237/255, 76/255, 92/255}, {255/255, 135/255, 54/255}, {194/255, 143/255, 239/255} }
+                local particles_colors = { {177/255, 204/255, 51/255}, {146/255, 211/255, 245/255}, {241/255, 179/255, 28/255}, {234/255, 90/255, 71/255}, {179/255, 153/255, 200/255}, {252/255, 234/255, 43/255} }
                 local particles_alpha = {0.3, 0.6}
                 particles[p].size = love.math.random( math.floor(cell_size/10), math.ceil(cell_size/5) )
                 particles[p].x = love.math.random( 0, love.graphics.getWidth() - particles[p].size )
                 particles[p].y = love.math.random( 0, -particles[p].size )
-                local c = love.math.random( 1, 4 )
+                local c = love.math.random( 1, 6 )
                 local a = love.math.random( 1, 2 )
                 local pc = particles_colors[c]
                 pc[4] = particles_alpha[a]
@@ -389,14 +387,17 @@ function love.draw()
                 -- cell field
                 if row == press_cell[1] and col == press_cell[2] then
                     love.graphics.setColor(color_press_cell)
+                    love.graphics.draw(image_cell, b_x + cell_size * (col - 1), b_y + cell_size * (row - 1), 0, k_scale, k_scale)
                 else
                     if matrix[i][j].open == 1 then
                         if matrix[i][j].value == -1 then love.graphics.setColor(color_mine_open) else love.graphics.setColor(color_empty_cell) end
+                        love.graphics.draw(image_cell, b_x + cell_size * (col - 1), b_y + cell_size * (row - 1), 0, k_scale, k_scale)
                     else
-                        if is_game_over and matrix[i][j].value == -1 then love.graphics.setColor(color_mine) else love.graphics.setColor(color_cell) end
+                        love.graphics.setColor(1, 1, 1, 1)
+                        if is_game_over and matrix[i][j].value == -1 then love.graphics.draw(image_mine, b_x + cell_size * (col - 1), b_y + cell_size * (row - 1), 0, k_scale, k_scale)
+                        else love.graphics.draw(image_tile, b_x + cell_size * (col - 1), b_y + cell_size * (row - 1), 0, k_scale, k_scale) end
                     end
                 end
-                love.graphics.draw(image_cell, b_x + cell_size * (col - 1), b_y + cell_size * (row - 1), 0, k_scale, k_scale)
 
                 -- cell content
                 if matrix[i][j].open == 1 then
@@ -418,15 +419,20 @@ function love.draw()
     end
 
     -- panel (menu, action)
-    if press_button == "menu" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
+    if press_button == "menu" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+    love.graphics.draw(image_button, coord.menu.x, coord.menu.y, 0, k_scale * 2, k_scale * 2)
+    love.graphics.setColor(1, 1, 1, 1)
     if not is_show_menu then love.graphics.draw(image_menu, coord.menu.x, coord.menu.y, 0, k_scale * 2, k_scale * 2) else love.graphics.draw(image_back, coord.menu.x, coord.menu.y, 0, k_scale * 2, k_scale * 2) end
-    if press_button == "action" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
+
+    if press_button == "action" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+    love.graphics.draw(image_button, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
+    love.graphics.setColor(1, 1, 1, 1)
     if not is_show_menu and not is_show_info then
         if not is_game_over then
             if action == "pick" then
-                love.graphics.draw(image_action_pick, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
+                love.graphics.draw(image_pick, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
             else
-                love.graphics.draw(image_action_flag, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
+                love.graphics.draw(image_flag, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
             end
         else
             love.graphics.draw(image_game_over, coord.action.x, coord.action.y, 0, k_scale * 2, k_scale * 2)
@@ -455,28 +461,38 @@ function love.draw()
     -- menu (hard, normal, easy, random, lang, about, anim, sound, exit)
     if is_show_menu then
         --love.graphics.rectangle("fill", m_x, m_y, 8 * cell_size, 8 * cell_size)
-        if press_button == "hard" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
-        love.graphics.draw(image_hard_mode, m_x, m_y, 0, k_scale * 2.7, k_scale * 2.7)
-        if press_button == "normal" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
-        love.graphics.draw(image_normal_mode, m_x + cell_size * 2.7, m_y, 0, k_scale * 2.7, k_scale * 2.7)
-        if press_button == "easy" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
-        love.graphics.draw(image_easy_mode, m_x + cell_size * 5.4, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "hard" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "normal" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 2.7, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "easy" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 5.4, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "random" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "lang" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 2.7, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "about" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 5.4, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "anim" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "sound" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 2.7, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7)
+        if press_button == "exit" then love.graphics.setColor(color_button_press) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.draw(image_button, m_x + cell_size * 5.4, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7)
 
-        if press_button == "random" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
-        love.graphics.draw(image_random_mode, m_x, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
-        if press_button == "lang" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.draw(image_hard, m_x, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        love.graphics.draw(image_normal, m_x + cell_size * 2.7, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        love.graphics.draw(image_easy, m_x + cell_size * 5.4, m_y, 0, k_scale * 2.7, k_scale * 2.7)
+        love.graphics.draw(image_random, m_x, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
         love.graphics.draw(image_lang, m_x + cell_size * 2.7, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
-        love.graphics.setColor(color_fg)
-        love.graphics.printf(game_lang, m_x + cell_size * 3.2, m_y + cell_size * 4.3, cell_size)
-        if press_button == "about" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
         love.graphics.draw(image_about, m_x + cell_size * 5.4, m_y + cell_size * 2.7, 0, k_scale * 2.7, k_scale * 2.7)
-
-        if press_button == "anim" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
         if is_anim then love.graphics.draw(image_move, m_x, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7) else love.graphics.draw(image_stop, m_x, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7) end
-        if press_button == "sound" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
         if is_sound then love.graphics.draw(image_sound, m_x + cell_size * 2.7, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7) else love.graphics.draw(image_mute, m_x + cell_size * 2.7, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7) end
-        if press_button == "exit" then love.graphics.setColor(color_bg) else love.graphics.setColor(1, 1, 1, 1) end
         love.graphics.draw(image_exit, m_x + cell_size * 5.4, m_y + cell_size * 5.4, 0, k_scale * 2.7, k_scale * 2.7)
+
+        love.graphics.setColor(color_fg)
+        love.graphics.printf(game_lang, m_x + cell_size * 2.95, m_y + cell_size * 4.6, cell_size)
     end
 
     -- info
