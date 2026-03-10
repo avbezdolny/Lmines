@@ -548,8 +548,7 @@ local function cascad_open(i, j)
 end
 
 
----@diagnostic disable-next-line: lowercase-global
-function open_cell(i, j)
+function open_cell(i, j)  -- global
     if matrix[i][j].open == 0 and matrix[i][j].flag ~= 1 then
         matrix[i][j].open = 1
         count_cell = count_cell - 1
@@ -945,3 +944,4 @@ function love.quit()
     save_game()
     return false
 end
+
