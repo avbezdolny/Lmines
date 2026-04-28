@@ -313,6 +313,7 @@ function love.update(dt)
     if is_anim then
         -- BOOM
         k_anim = k_anim + vector_anim * dt
+        if k_anim >= 1.5 or k_anim <= 0 then k_anim = 1 end  -- для исправления скачков анимации при паузах
         if k_anim >= 1 then
             vector_anim = -1
         elseif k_anim <= 0.5 then
@@ -327,7 +328,7 @@ function love.update(dt)
                 local particles_alpha = {0.3, 0.6}
                 particles[p].size = love.math.random( math.floor(cell_size/10), math.ceil(cell_size/5) )
                 particles[p].x = love.math.random( 0, love.graphics.getWidth() - particles[p].size )
-                particles[p].y = love.math.random( 0, -particles[p].size )
+                particles[p].y = -particles[p].size
                 local c = love.math.random( 1, 6 )
                 local a = love.math.random( 1, 2 )
                 local pc = particles_colors[c]
@@ -944,4 +945,3 @@ function love.quit()
     save_game()
     return false
 end
-

@@ -1,4 +1,4 @@
-local unpack = table.unpack  -- or unpack
+local unpack = table.unpack or unpack
 
 local registry = { }
 local current_namespace

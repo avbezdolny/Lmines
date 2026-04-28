@@ -10,7 +10,7 @@
 local lume = { _version = "2.3.0" }
 
 local pairs, ipairs = pairs, ipairs
-local type, assert, unpack = type, assert, table.unpack
+local type, assert, unpack = type, assert, table.unpack or unpack
 local tostring, tonumber = tostring, tonumber
 local math_floor = math.floor
 local math_ceil = math.ceil
@@ -123,7 +123,7 @@ end
 
 
 function lume.randomchoice(t)
-  return t[love.math.random(#t)]  -- add love
+  return t[math.random(#t)]
 end
 
 
@@ -198,7 +198,7 @@ end
 function lume.shuffle(t)
   local rtn = {}
   for i = 1, #t do
-    local r = love.math.random(i)  -- add love
+    local r = math.random(i)
     if r ~= i then
       rtn[i] = rtn[r]
     end
